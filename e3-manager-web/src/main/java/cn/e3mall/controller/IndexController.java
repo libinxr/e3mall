@@ -21,5 +21,9 @@ public class IndexController {
 	public String getPage(@PathVariable String page_index){
 		return page_index;
 	}
+	@RequestMapping("/rest/page/{page_index}")
+	public String getElsePage(@PathVariable String page_index){
+		return page_index;
+	}
 	
 }

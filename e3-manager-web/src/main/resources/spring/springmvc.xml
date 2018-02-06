@@ -9,6 +9,8 @@
         http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd">
 
+
+	<context:property-placeholder location="classpath:conf/resource.properties"/>
 	<context:component-scan base-package="cn.e3mall.controller" />
 	<mvc:annotation-driven />
 	<bean
@@ -17,11 +19,54 @@
 		<property name="suffix" value=".jsp" />
 	</bean>
 	
+	
+	<!-- 真正可以产生Connection的ConnectionFactory，由对应的 JMS服务厂商提供 -->
+	<bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://192.168.25.134:61616" />
+	</bean>
+	<!-- Spring用于管理真正的ConnectionFactory的ConnectionFactory -->
+	<bean id="connectionFactory"
+		class="org.springframework.jms.connection.SingleConnectionFactory">
+		<!-- 目标ConnectionFactory对应真实的可以产生JMS Connection的ConnectionFactory -->
+		<property name="targetConnectionFactory" ref="targetConnectionFactory" />
+	</bean>
+	
+	<!-- 配置生产者 -->
+	<!-- Spring提供的JMS工具类，它可以进行消息发送、接收等 -->
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<!-- 这个connectionFactory对应的是我们定义的Spring提供的那个ConnectionFactory对象 -->
+		<property name="connectionFactory" ref="connectionFactory" />
+	</bean>
+	<!--这个是队列目的地，点对点的 -->
+	<bean id="queueDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg>
+			<value>spring-queue</value>
+		</constructor-arg>
+	</bean>
+	<!--这个是主题目的地，一对多的 -->
+	<bean id="topicDestination" class="org.apache.activemq.command.ActiveMQTopic">
+		<constructor-arg value="itemAddTopic" />
+	</bean>
+	
+	
 	<mvc:resources location="/css/" mapping="/css/**"></mvc:resources>
 	<mvc:resources location="/js/" mapping="/js/**"></mvc:resources>
 	
+	<!-- 定义文件上传解析器 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 设定默认编码 -->
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<!-- 设定文件上传的最大值5MB，5*1024*1024 -->
+		<property name="maxUploadSize" value="5242880"></property>
+	</bean>
+	
 	<!-- 引用dubbo服务 -->
 	<dubbo:application name="e3-manager-web" />
-	<dubbo:registry protocol="zookeeper" address="192.168.183.129:2181"/>	
+	<dubbo:registry protocol="zookeeper" address="192.168.25.129:2181"/>	
 	<dubbo:reference interface="cn.e3mall.service.ItemService" id="itemService" />
+	<dubbo:reference interface="cn.e3mall.service.ItemCatService" id="itemCatService" />
+	<dubbo:reference interface="cn.e3mall.content.service.ContentCatgoryService" id="contentCatgoryService" />
+	<dubbo:reference interface="cn.e3mall.content.service.ContentService" id="contentService" />
+	<dubbo:reference interface="cn.e3mall.search.service.ItemSearchService" id="itemSearchService" />
 </beans>

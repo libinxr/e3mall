@@ -58,7 +58,7 @@
         			var data = $("#itemList").datagrid("getSelections")[0];
         			data.priceView = E3.formatPrice(data.price);
         			$("#itemeEditForm").form("load",data);
-        			
+        			var itemId=data.id;
         			// 加载商品描述
         			$.getJSON('/rest/item/query/item/desc/'+data.id,function(_data){
         				if(_data.status == 200){
