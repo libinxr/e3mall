@@ -3,7 +3,7 @@ package cn.e3mall.common.pojo;
 import java.io.Serializable;
 import java.util.List;
 
-public class DataGridResult implements Serializable{
+public class EasyUIDataGridResult implements Serializable{
 
 	private long total;
 	private List rows;
@@ -19,5 +19,4 @@ public class DataGridResult implements Serializable{
 	public void setRows(List rows) {
 		this.rows = rows;
 	}
-	
 }
